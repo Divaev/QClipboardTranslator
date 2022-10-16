@@ -2,7 +2,8 @@
 
 #include <QApplication>
 
-#include <clipboardchkr.h>
+#include "clipboardchkr.h"
+#include "words_finder.h"
 
 #include <cstring>
 #include <iostream>
@@ -22,6 +23,20 @@ int main(int argc, char *argv[])
 
     ClipboardChecker clipChkr;
     clipChkr.testXML();
+
+    WordsFinder test_translator;
+    try {
+        test_translator.initTheDict("dict.xdxf");
+    }
+    catch(const WordsFinder::FinderError &err) {
+        err.typeError();
+    }
+
+    pugi::xml_node found_node = test_translator.findTheSingleWorld("apple");
+    test_translator.translateTheSingleWorld(found_node);
+
+
+
     QApplication a(argc, argv);
     MainTranslatorWin w;
     w.show();
