@@ -33,10 +33,28 @@ MainTranslatorWin::~MainTranslatorWin()
     delete ui;
 }
 
-void MainTranslatorWin::translateInputWord(const pugi::xml_node& node) {
+void MainTranslatorWin::translateInputWord(const pugi::xml_node& found_node) {
     ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: black;}");
     ui->outputTextEdit->setPlainText("word is found");
+    auto node = found_node.parent();                //Come back to the word's tag
+    node = node.next_sibling();                     //The next node will be a transcription or a translation (if there is not transcription)
 
+    QMap<QString, QString> translationResult;       //index - name of parameter, value - transcription/translation
+
+    while(node != nullptr) {
+        if(node.type() == pugi::xml_node_type::node_element) {                      //if we encounter transcription tag <tr>
+            std::cout << "Transcription tag name: " << node.name() << std::endl;
+            std::cout << "Transcription: " << node.child_value() << std::endl;
+            translationResult["translation"] = node.child_value();                  //Save the value of the child_node (the transcription itself)
+        }
+        else if(node.type() == pugi::xml_node_type::node_pcdata) {                  //If we encounter translation
+            std::cout << "Translation: " << node.value() << std::endl;
+            translationResult["transcription"] = node.value();
+        }
+        node = node.next_sibling();
+    }
+    ui->outputTextEdit->setPlainText(translationResult["translation"]);
+    ui->outputTextEdit->appendPlainText(translationResult["transcription"]);
 }
 
 void MainTranslatorWin::makeTranslateAvailable() {

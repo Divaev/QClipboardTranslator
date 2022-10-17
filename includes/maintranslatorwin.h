@@ -21,7 +21,7 @@ public:
 
 private:
     Ui::MainTranslatorWin *ui;
-    void translateInputWord(const pugi::xml_node& node);
+    void translateInputWord(const pugi::xml_node& found_node);
 
 public slots:
 
