@@ -3,6 +3,10 @@
 #include <cstring>
 #include "pugixml.hpp"
 
+ClipboardChecker::ClipboardChecker(): clipboard(QApplication::clipboard()) {
+
+}
+
 int ClipboardChecker::testXML() const {
 
     std::cout << "---------------Test note output: ----------------------------" << std::endl;
@@ -116,4 +120,25 @@ int ClipboardChecker::testXML() const {
     std::cout << "End" << std::endl;
 
     return 0;
+}
+
+void ClipboardChecker::testClipboard() const {
+
+    while(true) {
+        static int counter;
+
+        clipboard->setText("lol1" + QString::number(counter), QClipboard::Clipboard);
+
+        if (clipboard->supportsSelection()) {
+            clipboard->setText("lol1" + QString::number(counter), QClipboard::Selection);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if(clipboard != nullptr)
+            qDebug() << clipboard->text();
+
+        ++counter;
+        counter %= 10;
+
+    }
+
 }

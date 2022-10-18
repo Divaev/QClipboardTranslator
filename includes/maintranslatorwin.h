@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "words_finder.h"
+#include "clipboardchkr.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainTranslatorWin; }
@@ -14,6 +15,7 @@ class MainTranslatorWin : public QMainWindow
 
     WordsFinder translator;
     QString current_word;
+    ClipboardChecker clipboardChecker;
 
 public:
     MainTranslatorWin(QWidget *parent = nullptr);

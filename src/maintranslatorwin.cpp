@@ -1,5 +1,6 @@
 #include "../includes/maintranslatorwin.h"
 #include "forms/ui_maintranslatorwin.h"
+#include "clipboardchkr.h"
 
 MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     : QMainWindow(parent)
@@ -25,6 +26,9 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                                 });
 
     translator.initTheDict("dict.xdxf");                //inite the dictionary
+
+    ClipboardChecker clipChkr;
+    clipChkr.testClipboard();
 
 }
 

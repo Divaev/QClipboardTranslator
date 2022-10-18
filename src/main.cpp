@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     */
 
 
-    ClipboardChecker clipChkr;
-    clipChkr.testXML();
+    //ClipboardChecker clipChkr;
+    //clipChkr.testXML();
 
     WordsFinder test_translator;
     try {
@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
 
     pugi::xml_node found_node = test_translator.findTheSingleWorld("apple");
     test_translator.translateTheSingleWorld(found_node);
+
+    //clipChkr.testClipboard();
 
 
 
