@@ -39,8 +39,10 @@ int main(int argc, char *argv[])
 
 
 
+
     QApplication a(argc, argv);
     MainTranslatorWin w;
+    w.getClipboardThread()->start();
     w.show();
     return a.exec();
 }

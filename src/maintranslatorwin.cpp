@@ -1,6 +1,6 @@
 #include "../includes/maintranslatorwin.h"
 #include "forms/ui_maintranslatorwin.h"
-#include "clipboardchkr.h"
+
 
 MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     : QMainWindow(parent)
@@ -27,13 +27,23 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     translator.initTheDict("dict.xdxf");                //inite the dictionary
 
-    ClipboardChecker clipChkr;
-    clipChkr.testClipboard();
+    //ClipboardChecker clipChkr;
+    //clipChkr.testClipboard();
+    signalReceiver = new SignalReceiver(this);
+    clipboardThread = new ClipboardThread(signalReceiver, this);
 
+    QObject::connect(signalReceiver, &SignalReceiver::sendWordOut,
+                     this, &MainTranslatorWin::findInputWord);
+
+}
+
+ClipboardThread* MainTranslatorWin::getClipboardThread() {
+    return clipboardThread;
 }
 
 MainTranslatorWin::~MainTranslatorWin()
 {
+    //delete clipboardThread;
     delete ui;
 }
 
@@ -68,9 +78,12 @@ void MainTranslatorWin::makeTranslateAvailable() {
         ui->translateButton->setEnabled(true);
 }
 
-void MainTranslatorWin::findInputWord() {
+void MainTranslatorWin::findInputWord(QString inputWord) {
     //ui->outputTextEdit->setPlainText("input change is detected");
-    current_word = ui->inputTextEdit->toPlainText();
+
+    //current_word = ui->inputTextEdit->toPlainText();
+    current_word = (inputWord == "" ? ui->inputTextEdit->toPlainText() :
+                                      inputWord);
     std::cout << "The word is detected in input field: " << current_word.toStdString().c_str() << std::endl;
     pugi::xml_node found_node = translator.findTheSingleWorld(current_word.toStdString().c_str());
     if(found_node == nullptr) {
@@ -79,6 +92,7 @@ void MainTranslatorWin::findInputWord() {
     else
         translateInputWord(found_node);
 }
+
 
 
 

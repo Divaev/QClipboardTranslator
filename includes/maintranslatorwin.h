@@ -1,3 +1,5 @@
+
+
 #ifndef MAINTRANSLATORWIN_H
 #define MAINTRANSLATORWIN_H
 
@@ -5,20 +7,29 @@
 #include "words_finder.h"
 #include "clipboardchkr.h"
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainTranslatorWin; }
 QT_END_NAMESPACE
+
+
 
 class MainTranslatorWin : public QMainWindow
 {
     Q_OBJECT
 
+
     WordsFinder translator;
     QString current_word;
-    ClipboardChecker clipboardChecker;
+
+    //ClipboardChecker clipboardChecker;
+    ClipboardThread *clipboardThread;
+    SignalReceiver *signalReceiver;
+
 
 public:
     MainTranslatorWin(QWidget *parent = nullptr);
+    ClipboardThread* getClipboardThread();
     ~MainTranslatorWin();
 
 private:
@@ -27,7 +38,7 @@ private:
 
 public slots:
 
-    void findInputWord();
+    void findInputWord(QString = "");
     void makeTranslateAvailable();
 
 signals:

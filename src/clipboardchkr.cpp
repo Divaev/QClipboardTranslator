@@ -3,7 +3,7 @@
 #include <cstring>
 #include "pugixml.hpp"
 
-ClipboardChecker::ClipboardChecker(): clipboard(QApplication::clipboard()) {
+ClipboardChecker::ClipboardChecker(QObject* parent): clipboard(QApplication::clipboard()), QObject(parent) {
 
 }
 
@@ -122,6 +122,15 @@ int ClipboardChecker::testXML() const {
     return 0;
 }
 
+SignalReceiver::SignalReceiver(QObject* parent): QObject(parent) {
+
+}
+
+void SignalReceiver::receiveWordFromClipboard(const QString &word) {
+    curr_word = word;
+    emit sendWordOut(curr_word);
+}
+
 void ClipboardChecker::testClipboard() const {
 
     while(true) {
@@ -141,4 +150,29 @@ void ClipboardChecker::testClipboard() const {
 
     }
 
+}
+
+ClipboardThread::ClipboardThread(SignalReceiver* receiver, QObject* parent): QThread(parent),
+                                                                      signalReceiver(receiver) {
+
+
+}
+
+void ClipboardThread::run() {
+    clipboardChecker = new ClipboardChecker;
+
+    QObject::connect(clipboardChecker, &ClipboardChecker::wordIsChanged,
+                     signalReceiver, &SignalReceiver::receiveWordFromClipboard);
+
+    QString currentClipboardContent = "";
+    QString receivedClipboardContent = "";
+
+    while(true) {
+        receivedClipboardContent = clipboardChecker->clipboard->text();
+        if(currentClipboardContent != receivedClipboardContent) {
+            currentClipboardContent = receivedClipboardContent;
+            emit clipboardChecker->wordIsChanged(currentClipboardContent);
+        }
+
+    }
 }
