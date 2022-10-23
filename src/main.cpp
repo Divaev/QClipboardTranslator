@@ -1,6 +1,7 @@
 #include "includes/maintranslatorwin.h"
 
 #include <QApplication>
+#include <QtConcurrent/QtConcurrent>
 
 #include "clipboardchkr.h"
 #include "words_finder.h"
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
     //ClipboardChecker clipChkr;
     //clipChkr.testXML();
 
+    /*
     WordsFinder test_translator;
     try {
         test_translator.initTheDict("dict.xdxf");
@@ -31,18 +33,42 @@ int main(int argc, char *argv[])
     catch(const WordsFinder::FinderError &err) {
         err.typeError();
     }
+    */
 
-    pugi::xml_node found_node = test_translator.findTheSingleWorld("apple");
-    test_translator.translateTheSingleWorld(found_node);
+    //pugi::xml_node found_node = test_translator.findTheSingleWorld("apple");
+    //test_translator.translateTheSingleWorld(found_node);
 
     //clipChkr.testClipboard();
 
 
-
+    qRegisterMetaType<QMap<QString, QString>>();            //it's necessary, because we need to pass
+                                                            //QMap<QString, QString> with signal
 
     QApplication a(argc, argv);
+
+    /*
+    while(true) {
+        qInfo() << QApplication::clipboard()->text();
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
+    */
+
+    /*
+    QtConcurrent::run([=] {
+        while(true) {
+            qInfo() << QApplication::clipboard()->text();
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
+        }
+
+        });
+    */
+
+
     MainTranslatorWin w;
-    w.getClipboardThread()->start();
+    //w.getClipboardThread()->setPriority(QThread::HighPriority);
+    //QApplication::clipboard()->moveToThread(w.getClipboardThread());
+    w.getWordsFinderThread()->start();
+
     w.show();
     return a.exec();
 }

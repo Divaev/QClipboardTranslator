@@ -34,7 +34,6 @@ set(SOURCES
     src/main.cpp
     src/maintranslatorwin.cpp
     src/pugixml.cpp
-    src/clipboardchkr.cpp
     src/words_finder.cpp
 )
 
@@ -42,7 +41,6 @@ set(HEADERS
     includes/maintranslatorwin.h
     includes/pugiconfig.hpp
     includes/pugixml.hpp
-    includes/clipboardchkr.h
     includes/words_finder.h
     )
 
