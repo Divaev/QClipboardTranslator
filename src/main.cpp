@@ -3,7 +3,6 @@
 #include <QApplication>
 #include <QtConcurrent/QtConcurrent>
 
-#include "clipboardchkr.h"
 #include "words_finder.h"
 
 #include <cstring>
