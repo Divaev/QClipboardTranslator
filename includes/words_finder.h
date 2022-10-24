@@ -16,17 +16,14 @@ class WordsReceiver: public QObject {
     QString input_word;
 public:
     WordsReceiver(QObject* parent = nullptr);
-
-//public slots:
-
-    //void receiveFromClipboard(const QString&);
     void setCurrentWord(const QString&);
 
 signals:
     void sendResultOut(const QMap<QString, QString> &);
-
     void wordIsReceived(const QString&);
-    //void sendWordOut(const QMap<QString, QString> &);
+    void setDictPath(const QString&);
+    void stopWordsFinderThread();
+
 };
 
 
@@ -38,21 +35,16 @@ class WordsFinder: public QObject {
 
     pugi::xml_document current_dictionary;
 
-
 public:
 
     class FinderError;
 
-    //pugi::xml_node findTheSingleWorld(const QString&) const;
-
-    //const char* translateTheSingleWorld(const pugi::xml_node&) const;
-
     QMap<QString, QString> translateTheSingleWorld(const pugi::xml_node&) const;
-    void initTheDict(const QString& dict_path);
 
     ~WordsFinder();
 
 public slots:
+    void initTheDict(const QString& dict_path);
     void findTheSingleWord(const QString&);
 
 
@@ -74,6 +66,7 @@ class WordsFinderThread: public QThread {
     QString dict_path;
     WordsFinder* wordsFinder;
     WordsReceiver* wordsReceiver;
+    ~WordsFinderThread();
 public:
     WordsFinderThread(WordsReceiver* receiver, const QString& dict_path,
                       QObject* parent = nullptr);

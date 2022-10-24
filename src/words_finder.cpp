@@ -5,28 +5,9 @@ WordsReceiver::WordsReceiver(QObject* parent): QObject(parent) {
 
 }
 
-/*
-void WordsReceiver::receiveFromClipboard(const QString& input_data) {
-    emit dataIsReceived(input_data);
-}
-*/
-
 void WordsReceiver::setCurrentWord(const QString& word) {
     input_word = word;
 }
-
-
-/*
-pugi::xml_node WordsFinder::findTheSingleWorld(const char* word) const {
-    pugi::xml_node main_node = current_dictionary.child("xdxf");
-    pugi::xml_node found_node = current_dictionary.find_node([word](const pugi::xml_node& curr_node) {
-                                                                    return strcmp(curr_node.value(), word) ? false: true;
-                                                                });
-
-    return found_node;
-}
-*/
-
 
 void WordsFinder::findTheSingleWord(const QString& word) {
     pugi::xml_node main_node = current_dictionary.child("xdxf");
@@ -38,12 +19,11 @@ void WordsFinder::findTheSingleWord(const QString& word) {
         QMap<QString, QString> result = translateTheSingleWorld(found_node);
         emit translationIsReady(result);
     }
-
 }
 
 
 QMap<QString, QString> WordsFinder::translateTheSingleWorld(const pugi::xml_node& found_node) const {
-    std::cout << "Source word: " << found_node.value() << std::endl;
+
     auto node = found_node.parent();
     node = node.next_sibling();
 
@@ -52,11 +32,9 @@ QMap<QString, QString> WordsFinder::translateTheSingleWorld(const pugi::xml_node
     while(node != nullptr) {
 
         if(node.type() == pugi::xml_node_type::node_element) {
-            std::cout << "Transcription: " << node.child_value() << std::endl;
             translationResult["transcription"] = node.child_value();
         }
         else if(node.type() == pugi::xml_node_type::node_pcdata) {
-            std::cout << "Translation: " << node.value() << std::endl;
             translationResult["translation"] = node.value();
         }
         node = node.next_sibling();
@@ -75,7 +53,7 @@ WordsFinder::FinderError::FinderError(const char* err): errorMsg(err) {
 }
 
 void WordsFinder::FinderError::typeError() const {
-    std::cout << errorMsg << std::endl;
+    qDebug() << QString(errorMsg);
 }
 
 const char *WordsFinder::FinderError::getError() const {
@@ -83,7 +61,7 @@ const char *WordsFinder::FinderError::getError() const {
 }
 
 WordsFinder::~WordsFinder() {
-
+    //current_dictionary.reset();
 }
 
 WordsFinderThread::WordsFinderThread(WordsReceiver *receiver,
@@ -91,7 +69,6 @@ WordsFinderThread::WordsFinderThread(WordsReceiver *receiver,
                                      QObject* parent): wordsReceiver(receiver),
                                                        dict_path(_dict_path),
                                                        QThread(parent) {
-    qDebug() << "wordsFinderThread constructor";
 }
 
 void WordsFinderThread::run() {
@@ -105,10 +82,28 @@ void WordsFinderThread::run() {
     QObject::connect(wordsFinder, &WordsFinder::translationIsReady,
                      wordsReceiver, &WordsReceiver::sendResultOut);
 
-    exec();
+    QObject::connect(wordsReceiver, &WordsReceiver::setDictPath,
+                     wordsFinder, &WordsFinder::initTheDict);
+
+
+
+    QObject::connect(this, &QThread::finished,                              //When the thread stops, the wordsReceiver will be deleted
+                     wordsReceiver, &QObject::deleteLater);                 //from heap
+
+    QObject::connect(wordsReceiver, &WordsReceiver::stopWordsFinderThread,
+                     this, &QThread::quit);
+
+
+
+    exec();                     //we need to start the event loop for translation requests receiving
+                                //which comes from GUI thread vie queues connection
 }
 
 WordsFinder* WordsFinderThread::getWordsFinder() {
     return wordsFinder;
+}
+
+WordsFinderThread::~WordsFinderThread() {
+    delete wordsFinder;
 }
 
