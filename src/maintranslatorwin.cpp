@@ -27,7 +27,8 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     QObject::connect(clipboard, &QClipboard::dataChanged,                               //bind the clipboard with the words receiver
                      this, [&](){
-                                current_word = clipboard->text();
+                                current_word = clipboard->text();                       //read the current word from the clipboard
+                                ui->inputTextEdit->setPlainText(current_word);          //set a word from the clipboard as an input word
                                 emit wordsReceiver->wordIsReceived(current_word);
                             });
 
@@ -38,7 +39,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     QObject::connect(ui->translateButton, &QPushButton::clicked,                    //bind translate button with the word receiver
                      wordsReceiver, [&](){
-                                            current_word = clipboard->text();
+                                            current_word = ui->inputTextEdit->toPlainText();
                                             emit wordsReceiver->wordIsReceived(current_word);
                                      });
 
