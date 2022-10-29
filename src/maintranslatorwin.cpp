@@ -2,6 +2,13 @@
 #include "forms/ui_maintranslatorwin.h"
 
 
+class QPlainTextEditModif: public QPlainTextEdit {
+public:
+    QPlainTextEditModif(QObject* parent = nullptr);
+
+
+};
+
 MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTranslatorWin)
@@ -16,9 +23,11 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     QObject::connect(ui->translateButton, &QPushButton::clicked,                        //toggle translate button
                      this, [&]() {ui->translateButton->setEnabled(false);});
 
-    QObject::connect(ui->inputTextEdit, SIGNAL(textChanged()),                          //togge translat button
+    QObject::connect(ui->inputLineEdit, SIGNAL(textChanged()),                          //togge translat button
                      this, SLOT(makeTranslateAvailable()));
 
+    ui->inputLineEdit->installEventFilter(this);                                        //install the event filter to
+                                                                                        //incept enter pressing
 
 
     wordsReceiver = new WordsReceiver(this);                                            //define the words receiver
@@ -28,7 +37,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     QObject::connect(clipboard, &QClipboard::dataChanged,                               //bind the clipboard with the words receiver
                      this, [&](){
                                 current_word = clipboard->text();                       //read the current word from the clipboard
-                                ui->inputTextEdit->setPlainText(current_word);          //set a word from the clipboard as an input word
+                                ui->inputLineEdit->setText(current_word);          //set a word from the clipboard as an input word
                                 emit wordsReceiver->wordIsReceived(current_word);
                             });
 
@@ -36,10 +45,13 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     QObject::connect(wordsReceiver, &WordsReceiver::sendResultOut,                  //bind words receiver with GUI
                      this, &MainTranslatorWin::printResultTranslation);
 
+    QObject::connect(wordsReceiver, &WordsReceiver::sendErrorNotification,
+                     this, &MainTranslatorWin::printError);
+
 
     QObject::connect(ui->translateButton, &QPushButton::clicked,                    //bind translate button with the word receiver
                      wordsReceiver, [&](){
-                                            current_word = ui->inputTextEdit->toPlainText();
+                                            current_word = ui->inputLineEdit->text();
                                             emit wordsReceiver->wordIsReceived(current_word);
                                      });
 
@@ -47,6 +59,18 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
 void MainTranslatorWin::closeEvent(QCloseEvent* event) {
     emit wordsReceiver->stopWordsFinderThread();
+}
+
+bool MainTranslatorWin::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == ui->inputLineEdit && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Return) {                        //we intercept enter pressing
+            emit ui->translateButton->clicked();                        //emit the signale
+            return true;                                                //and block this event
+        }
+    }
+
+    return false;                                                       //in the other cases the event goes to textEditor
 }
 
 
@@ -62,7 +86,7 @@ MainTranslatorWin::~MainTranslatorWin()
 
 
 void MainTranslatorWin::makeTranslateAvailable() {
-    if(ui->inputTextEdit->toPlainText() == "")
+    if(ui->inputLineEdit->text() == "")
         ui->translateButton->setEnabled(false);
     else
         ui->translateButton->setEnabled(true);
@@ -70,13 +94,19 @@ void MainTranslatorWin::makeTranslateAvailable() {
 
 
 void MainTranslatorWin::printResultTranslation(const QMap<QString, QString> &result) {
+    ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: black;}");
+
     ui->outputTextEdit->setPlainText(result["transcription"]);
     ui->outputTextEdit->appendPlainText(result["translation"]);
 
-    if(result["translation"] == "") {
-        ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: red;}");
-        ui->outputTextEdit->setPlainText("notfound");
-    }
+    QTextCursor textCursor = ui->outputTextEdit->textCursor();
+    textCursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor,1);
+    ui->outputTextEdit->setTextCursor(textCursor);
+}
+
+void MainTranslatorWin::printError(const QString& err_message) {
+    ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: red;}");
+    ui->outputTextEdit->setPlainText(err_message);
 
     QTextCursor textCursor = ui->outputTextEdit->textCursor();
     textCursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor,1);

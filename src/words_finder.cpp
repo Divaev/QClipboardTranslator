@@ -10,15 +10,18 @@ void WordsReceiver::setCurrentWord(const QString& word) {
 }
 
 void WordsFinder::findTheSingleWord(const QString& word) {
+    QString lower_word = word.toLower();
     pugi::xml_node main_node = current_dictionary.child("xdxf");
-    pugi::xml_node found_node = current_dictionary.find_node([word](const pugi::xml_node& curr_node) {
-                                                                    return strcmp(curr_node.value(), word.toStdString().c_str()) ? false: true;
-                                                                });
+    pugi::xml_node found_node = current_dictionary.find_node([lower_word](const pugi::xml_node& curr_node) {
+                                                                            return strcmp(curr_node.value(), lower_word.toStdString().c_str()) ? false: true;
+                                                                         });
 
     if(found_node != nullptr) {
         QMap<QString, QString> result = translateTheSingleWorld(found_node);
         emit translationIsReady(result);
     }
+    else
+        emit wordIsNotFound();
 }
 
 
@@ -48,17 +51,7 @@ void WordsFinder::initTheDict(const QString& dict_path) {
 }
 
 
-WordsFinder::FinderError::FinderError(const char* err): errorMsg(err) {
-
-}
-
-void WordsFinder::FinderError::typeError() const {
-    qDebug() << QString(errorMsg);
-}
-
-const char *WordsFinder::FinderError::getError() const {
-    return errorMsg;
-}
+struct WordsFinder::ErrorMessages WordsFinder::errorMessages;
 
 WordsFinder::~WordsFinder() {
     //current_dictionary.reset();
@@ -81,6 +74,9 @@ void WordsFinderThread::run() {
 
     QObject::connect(wordsFinder, &WordsFinder::translationIsReady,
                      wordsReceiver, &WordsReceiver::sendResultOut);
+
+    QObject::connect(wordsFinder, &WordsFinder::wordIsNotFound,
+                     wordsReceiver, &WordsReceiver::sendErrorNotification);
 
     QObject::connect(wordsReceiver, &WordsReceiver::setDictPath,
                      wordsFinder, &WordsFinder::initTheDict);

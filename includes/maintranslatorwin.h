@@ -26,6 +26,7 @@ class MainTranslatorWin : public QMainWindow
     WordsFinderThread* wordsFinderThread;       //finding in the dictionary goes to another thread
 
     void closeEvent(QCloseEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 public:
     MainTranslatorWin(QWidget *parent = nullptr);
     WordsFinderThread* getWordsFinderThread();
@@ -37,6 +38,7 @@ private:
 public slots:
 
     void printResultTranslation(const QMap<QString, QString>&);
+    void printError(const QString&);
     void makeTranslateAvailable();
 
 signals:

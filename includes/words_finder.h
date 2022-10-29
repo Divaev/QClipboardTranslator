@@ -20,6 +20,7 @@ public:
 
 signals:
     void sendResultOut(const QMap<QString, QString> &);
+    void sendErrorNotification(const QString&);
     void wordIsReceived(const QString&);
     void setDictPath(const QString&);
     void stopWordsFinderThread();
@@ -35,9 +36,11 @@ class WordsFinder: public QObject {
 
     pugi::xml_document current_dictionary;
 
-public:
+    static struct ErrorMessages {
+        QString wordIsNotFound = "The word is not found!";
+    } errorMessages;
 
-    class FinderError;
+public:
 
     QMap<QString, QString> translateTheSingleWorld(const pugi::xml_node&) const;
 
@@ -50,15 +53,9 @@ public slots:
 
 signals:
     void translationIsReady(const QMap<QString, QString>&);
+    void wordIsNotFound(const QString& = errorMessages.wordIsNotFound);
 };
 
-class WordsFinder::FinderError {
-    const char* errorMsg;
-public:
-    FinderError(const char* err);
-    void typeError() const;
-    const char* getError() const;
-};
 
 
 class WordsFinderThread: public QThread {
