@@ -5,9 +5,9 @@ project(QClipboardTranslator LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC_SEARCH_PATHS src/forms)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -35,6 +35,8 @@ set(SOURCES
     src/maintranslatorwin.cpp
     src/pugixml.cpp
     src/words_finder.cpp
+    src/selectdictionarydialog.cpp
+
 )
 
 set(HEADERS
@@ -42,14 +44,19 @@ set(HEADERS
     includes/pugiconfig.hpp
     includes/pugixml.hpp
     includes/words_finder.h
+    includes/selectdictionarydialog.h
     )
 
 set(FORMS
     src/forms/maintranslatorwin.ui
+    src/forms/selectdictionarydialog.ui
+    #src/maintranslatorwin.ui
+    #src/selectdictionarydialog.ui
     )
 
 include_directories( ${CMAKE_SOURCE_DIR}/includes
-                     ${CMAKE_SOURCE_DIR}/src)
+                     ${CMAKE_SOURCE_DIR}/src
+                     )
 
 #qt_add_executable(QClipboardTranslator
 #    ${SOURCES}

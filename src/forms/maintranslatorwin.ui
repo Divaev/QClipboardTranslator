@@ -18,9 +18,9 @@
     <item>
      <layout class="QHBoxLayout" name="inputLayout">
       <item>
-       <widget class="QPlainTextEdit" name="inputTextEdit">
+       <widget class="QLineEdit" name="inputLineEdit">
         <property name="placeholderText">
-         <string>Enter the word to translate..</string>
+         <string>Enter a word here..</string>
         </property>
        </widget>
       </item>
@@ -34,10 +34,11 @@
      </layout>
     </item>
     <item>
-     <widget class="QPlainTextEdit" name="outputTextEdit"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="outputLayout"/>
+     <layout class="QHBoxLayout" name="outputLayout">
+      <item>
+       <widget class="QPlainTextEdit" name="outputTextEdit"/>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -47,11 +48,23 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="mainMenu">
+    <property name="title">
+     <string>Menu</string>
+    </property>
+    <addaction name="actionSetDictionary"/>
+   </widget>
+   <addaction name="mainMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSetDictionary">
+   <property name="text">
+    <string>Set Dictionary</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

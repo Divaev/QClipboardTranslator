@@ -1,12 +1,12 @@
-
-
 #ifndef MAINTRANSLATORWIN_H
 #define MAINTRANSLATORWIN_H
 
 #include <QMainWindow>
 #include <QTextCursor>
 #include <QClipboard>
+#include <QSettings>
 #include "words_finder.h"
+#include "selectdictionarydialog.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -19,6 +19,7 @@ class MainTranslatorWin : public QMainWindow
 {
     Q_OBJECT
 
+    QSettings settings;
     QString current_word;
 
     QClipboard *clipboard;
@@ -26,6 +27,7 @@ class MainTranslatorWin : public QMainWindow
     WordsFinderThread* wordsFinderThread;       //finding in the dictionary goes to another thread
 
     void closeEvent(QCloseEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 public:
     MainTranslatorWin(QWidget *parent = nullptr);
     WordsFinderThread* getWordsFinderThread();
@@ -33,10 +35,12 @@ public:
 
 private:
     Ui::MainTranslatorWin *ui;
+    SelectDictionaryDialog *dictionaryDialog;
 
 public slots:
 
     void printResultTranslation(const QMap<QString, QString>&);
+    void printError(const QString&);
     void makeTranslateAvailable();
 
 signals:
