@@ -1,6 +1,7 @@
 #include "../includes/maintranslatorwin.h"
 #include "forms/ui_maintranslatorwin.h"
 
+
 MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTranslatorWin)
@@ -18,6 +19,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     QObject::connect(ui->translateButton, &QPushButton::clicked,                        //toggle translate button
                      this, [&]() {ui->translateButton->setEnabled(false);});
+
 
     QObject::connect(ui->inputLineEdit, SIGNAL(textChanged(QString)),                          //togge translat button
                      this, SLOT(makeTranslateAvailable()));
