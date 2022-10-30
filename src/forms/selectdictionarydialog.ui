@@ -1,7 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author/>
- <comment/>
- <exportmacro/>
  <class>SelectDictionaryDialog</class>
  <widget class="QDialog" name="SelectDictionaryDialog">
   <property name="geometry">
@@ -15,12 +13,12 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
+  <widget class="QDialogButtonBox" name="dictOkCancelBox">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>240</y>
-     <width>341</width>
+     <y>260</y>
+     <width>351</width>
      <height>32</height>
     </rect>
    </property>
@@ -31,12 +29,47 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
+  <widget class="QPushButton" name="addDictButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>40</y>
+     <width>71</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add..</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="delDictButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>80</y>
+     <width>71</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="dictListWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>301</width>
+     <height>241</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
- <pixmapfunction/>
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>dictOkCancelBox</sender>
    <signal>accepted()</signal>
    <receiver>SelectDictionaryDialog</receiver>
    <slot>accept()</slot>
@@ -52,7 +85,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>dictOkCancelBox</sender>
    <signal>rejected()</signal>
    <receiver>SelectDictionaryDialog</receiver>
    <slot>reject()</slot>

@@ -44,7 +44,7 @@ public slots:
     void makeTranslateAvailable();
 
 signals:
-    //void setDictPath(const QString&);
+    void setDictPath(const QString&);
     void stopWordsFinderThread();
 };
 #endif // MAINTRANSLATORWIN_H

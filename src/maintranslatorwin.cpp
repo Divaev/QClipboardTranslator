@@ -9,7 +9,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     , settings("settings.ini", QSettings::IniFormat)
 {
 
-    settings.setValue("dict_path", "dict.xdxf");
+    settings.setValue("current_dict_path", "dict.xdxf");
 
     ui->setupUi(this);
 
@@ -30,7 +30,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     wordsReceiver = new WordsReceiver(this);                                            //define the words receiver
                                                                                         //which stays in the main thread
-    wordsFinderThread = new WordsFinderThread(wordsReceiver, settings.value("dict_path").toString(), this);        //define the words finder thread
+    wordsFinderThread = new WordsFinderThread(wordsReceiver, settings.value("current_dict_path").toString(), this);        //define the words finder thread
 
     QObject::connect(clipboard, &QClipboard::dataChanged,                               //bind the clipboard with the words receiver
                      this, [&](){
@@ -55,7 +55,13 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     QObject::connect(ui->actionSetDictionary, &QAction::triggered,
                      this, [this]() {
-                                        dictionaryDialog = new SelectDictionaryDialog(this);
+                                        dictionaryDialog = new SelectDictionaryDialog(&settings, this);
+                                        QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictHasBeenChosen,
+                                                         this, [this]() {
+                                                            emit this->setDictPath(settings.value("current_dict_path").toString());
+                                                            qDebug() << "new dictionary has been chosen!";
+                                                         });
+                                        dictionaryDialog->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
                                         dictionaryDialog->show();
                                         //qDebug() << "action";
                                  });
