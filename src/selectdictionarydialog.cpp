@@ -10,11 +10,10 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
 
     refreshDictListWidget();
 
-
+    addDictDialog = new QFileDialog(this);
 
     QObject::connect(ui->addDictButton, &QPushButton::clicked,
                      this, [this]() {
-                                addDictDialog = new QFileDialog(this);
 
                                 addDictDialog->setViewMode(QFileDialog::Detail);
                                 addDictDialog->setFileMode(QFileDialog::ExistingFiles);
@@ -27,16 +26,17 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
                                 }
 
                                 refreshDictListWidget();
-
-
                             });
 
 
     QObject::connect(ui->dictOkCancelBox, &QDialogButtonBox::accepted,
                      this, [this]() {
+                                int currentRow = ui->dictListWidget->currentRow();
+                                currentDict = dictNames[currentRow];
                                 settings_ptr->setValue("current_dict_path", currentDict);
                                 emit this->dictHasBeenChosen();
                             });
+
 }
 
 void SelectDictionaryDialog::refreshDictListWidget() {
@@ -54,7 +54,6 @@ void SelectDictionaryDialog::refreshDictListWidget() {
 
     dictNames.sort();
     QStringList shortDictNames = genShortNames(dictNames);
-    //shortDictNames = QList<QString>({"dict", "dict1"});
     shortDictNames.append("dict1");
     ui->dictListWidget->clear();
     ui->dictListWidget->addItems(shortDictNames);

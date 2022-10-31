@@ -53,18 +53,20 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                                             emit wordsReceiver->wordIsReceived(current_word);
                                      });
 
+
+    dictionaryDialog = new SelectDictionaryDialog(&settings, this);
+
+    QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictHasBeenChosen,
+                     this, [this]() {
+                                emit wordsReceiver->setDictPath(settings.value("current_dict_path").toString());
+                                qDebug() << "new dictionary has been chosen!";
+                                qDebug() << "The new dict is " << settings.value("current_dict_path").toString();
+                            });
+
     QObject::connect(ui->actionSetDictionary, &QAction::triggered,
                      this, [this]() {
-                                        dictionaryDialog = new SelectDictionaryDialog(&settings, this);
-                                        QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictHasBeenChosen,
-                                                         this, [this]() {
-                                                            emit this->setDictPath(settings.value("current_dict_path").toString());
-                                                            qDebug() << "new dictionary has been chosen!";
-                                                         });
-                                        dictionaryDialog->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-                                        dictionaryDialog->show();
-                                        //qDebug() << "action";
-                                 });
+                                dictionaryDialog->show();
+                           });
 }
 
 void MainTranslatorWin::closeEvent(QCloseEvent* event) {

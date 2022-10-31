@@ -47,7 +47,9 @@ QMap<QString, QString> WordsFinder::translateTheSingleWorld(const pugi::xml_node
 }
 
 void WordsFinder::initTheDict(const QString& dict_path) {
-    current_dictionary.load_file(dict_path.toStdString().c_str());
+    bool res = current_dictionary.load_file(dict_path.toStdString().c_str());
+    qDebug() << (res ? QString("Dict is loaded: ") + dict_path :
+                       QString("Dict is not initialized"));
 }
 
 
@@ -92,7 +94,7 @@ void WordsFinderThread::run() {
 
 
     exec();                     //we need to start the event loop for translation requests receiving
-                                //which comes from GUI thread vie queues connection
+                                //which comes from GUI thread via queues connection
 }
 
 WordsFinder* WordsFinderThread::getWordsFinder() {
