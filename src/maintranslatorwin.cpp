@@ -6,8 +6,9 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTranslatorWin)
     , clipboard(QApplication::clipboard())
-    , settings("settings.ini", QSettings::IniFormat)
-{
+    , settings("settings.ini", QSettings::IniFormat) {
+
+    this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
     settings.setValue("current_dict_path", "dict.xdxf");
 
@@ -44,7 +45,18 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                      this, &MainTranslatorWin::printResultTranslation);
 
     QObject::connect(wordsReceiver, &WordsReceiver::sendErrorNotification,
-                     this, &MainTranslatorWin::printError);
+                     this, &MainTranslatorWin::proceedError);
+
+    QObject::connect(wordsReceiver, &WordsReceiver::dictionaryIsReady,
+                     this, [this]() {
+                                ui->inputLineEdit->clear();
+                                ui->translateButton->setEnabled(true);
+                                ui->inputLineEdit->setEnabled(true);
+                                ui->inputLineEdit->setStyleSheet("QPlainTextEdit {color: black;}");
+                                ui->inputLineEdit->clear();
+                                ui->translateButton->setEnabled(false);
+                                ui->outputTextEdit->clear();
+                           });
 
 
     QObject::connect(ui->translateButton, &QPushButton::clicked,                    //bind translate button with the word receiver
@@ -62,6 +74,9 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                                 qDebug() << "new dictionary has been chosen!";
                                 qDebug() << "The new dict is " << settings.value("current_dict_path").toString();
                             });
+
+    QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictErrorThrow,
+                     this, &MainTranslatorWin::proceedError);
 
     QObject::connect(ui->actionSetDictionary, &QAction::triggered,
                      this, [this]() {
@@ -116,9 +131,16 @@ void MainTranslatorWin::printResultTranslation(const QMap<QString, QString> &res
     ui->outputTextEdit->setTextCursor(textCursor);
 }
 
-void MainTranslatorWin::printError(const QString& err_message) {
+void MainTranslatorWin::proceedError(const QString& err_message, const bool& block_input) {
     ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: red;}");
     ui->outputTextEdit->setPlainText(err_message);
+    if (block_input) {
+        ui->inputLineEdit->setEnabled(false);
+        ui->inputLineEdit->setStyleSheet("QPlainTextEdit {color: red;}");
+        ui->inputLineEdit->setText(err_message);
+        ui->translateButton->setEnabled(false);
+
+    }
 
     QTextCursor textCursor = ui->outputTextEdit->textCursor();
     textCursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor,1);

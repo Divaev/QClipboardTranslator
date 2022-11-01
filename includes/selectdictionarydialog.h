@@ -30,9 +30,14 @@ private:
     Ui::SelectDictionaryDialog *ui;
 
     void refreshDictListWidget();
+    void setOkButton(const bool&);
+    void setDeleteButton(const bool&);
 
 signals:
     void dictHasBeenChosen();
+    void dictErrorThrow(const QString&, const bool& = true);
+
+
 
 
 };

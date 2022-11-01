@@ -50,6 +50,11 @@ void WordsFinder::initTheDict(const QString& dict_path) {
     bool res = current_dictionary.load_file(dict_path.toStdString().c_str());
     qDebug() << (res ? QString("Dict is loaded: ") + dict_path :
                        QString("Dict is not initialized"));
+    if (res == true)
+        //emit dictionaryInitError();
+        emit dictionaryHasBeenInitialized();
+    else
+        emit dictionaryInitError();
 }
 
 
@@ -82,6 +87,9 @@ void WordsFinderThread::run() {
 
     QObject::connect(wordsReceiver, &WordsReceiver::setDictPath,
                      wordsFinder, &WordsFinder::initTheDict);
+
+    QObject::connect(wordsFinder, &WordsFinder::dictionaryHasBeenInitialized,
+                     wordsReceiver, &WordsReceiver::dictionaryIsReady);
 
 
 

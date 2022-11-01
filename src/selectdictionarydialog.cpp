@@ -8,7 +8,10 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
 {
     ui->setupUi(this);
 
-    refreshDictListWidget();
+    dictNames = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
+    currentDict = settings_ptr->value("current_dict_path").toString();                  //from the settings
+
+    refreshDictListWidget();                                                            //refresh dictListWidget after loading from the settings
 
     addDictDialog = new QFileDialog(this);
 
@@ -20,26 +23,45 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
                                 addDictDialog->setNameFilter("Dictionaries (*.xdxf)");
 
                                 QStringList addDictNames;
-                                if (addDictDialog->exec()) {
+                                if (addDictDialog->exec()) {                              //execution of the dict choosing dialog
                                     addDictNames = addDictDialog->selectedFiles();
-                                    dictNames.append(addDictNames);
+                                    if (!addDictNames.empty()) {
+                                        setOkButton(true);
+                                        setDeleteButton(true);
+                                    }
+
+                                    dictNames.append(addDictNames);                       //add chosen dialogs to the existing pool
                                 }
 
-                                refreshDictListWidget();
+                                refreshDictListWidget();                                //refresh dictListWidget after adding new dictionaries
                             });
+
+    QObject::connect(ui->delDictButton, &QPushButton::clicked,
+                     this, [this]() {
+                                int currentRow = ui->dictListWidget->currentRow();              //receive the number of the selected row
+                                dictNames.removeAt(currentRow);                                 //delete this row
+                                refreshDictListWidget();                                        //refresh dictListWidget after removing of a dictionary
+
+                           });
 
 
     QObject::connect(ui->dictOkCancelBox, &QDialogButtonBox::accepted,
                      this, [this]() {
-                                int currentRow = ui->dictListWidget->currentRow();
-                                currentDict = dictNames[currentRow];
+                                int currentRow = ui->dictListWidget->currentRow();              //selected row in the widget is the current logic row
+                                currentDict = dictNames[currentRow];                           //assing currentDict as the dict that has currentRow index in the
+                                                                                             //dictNames QStringList
+
+                                settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
                                 settings_ptr->setValue("current_dict_path", currentDict);
                                 emit this->dictHasBeenChosen();
-                            });
+
+                             });
 
 }
 
 void SelectDictionaryDialog::refreshDictListWidget() {
+
+    //-----short names making lambda-------------------
     auto genShortNames = [](const QStringList& fullPaths) {
         QStringList shortNames;
         std::transform(fullPaths.begin(),  fullPaths.end(),
@@ -51,19 +73,50 @@ void SelectDictionaryDialog::refreshDictListWidget() {
                         });
         return shortNames;
     };
+    //-------------------------------------------------
+
 
     dictNames.sort();
+    int currentRow = dictNames.indexOf(currentDict);
+
     QStringList shortDictNames = genShortNames(dictNames);
-    shortDictNames.append("dict1");
+    //shortDictNames.append("dict1");
     ui->dictListWidget->clear();
     ui->dictListWidget->addItems(shortDictNames);
 
-    currentDict = "dict1";
-
+    //currentDict = "dict1";
+    /*
     QList<QListWidgetItem*> selectedDicts = ui->dictListWidget->findItems(currentDict, Qt::MatchFixedString);
 
-    ui->dictListWidget->setCurrentItem(*(selectedDicts.begin()));
+    if(!selectedDicts.empty()) {
+        ui->dictListWidget->setCurrentItem(*(selectedDicts.begin()));
+        settings_ptr->setValue("current_dict_path", currentDict);
+    }
+    */
 
+    if (currentRow > -1) {
+        ui->dictListWidget->setCurrentRow(currentRow);
+    }
+    else if (!dictNames.empty()) {
+        ui->dictListWidget->setCurrentRow(0);
+    }
+    else {
+        currentDict = "";
+        setOkButton(false);
+        setDeleteButton(false);
+        emit dictErrorThrow(QString("There is no selected dictionaries!"));
+    }
+
+    if (!dictNames.empty())
+        settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
+}
+
+void SelectDictionaryDialog::setOkButton(const bool& state) {
+    ui->dictOkCancelBox->button(QDialogButtonBox::Ok)->setEnabled(state);
+}
+
+void SelectDictionaryDialog::setDeleteButton(const bool& state) {
+    ui->delDictButton->setEnabled(false);
 }
 
 

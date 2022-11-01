@@ -20,10 +20,12 @@ public:
 
 signals:
     void sendResultOut(const QMap<QString, QString> &);
-    void sendErrorNotification(const QString&);
+    void sendErrorNotification(const QString&, const bool&);
     void wordIsReceived(const QString&);
     void setDictPath(const QString&);
     void stopWordsFinderThread();
+
+    void dictionaryIsReady();
 
 };
 
@@ -38,6 +40,7 @@ class WordsFinder: public QObject {
 
     static struct ErrorMessages {
         QString wordIsNotFound = "The word is not found!";
+        QString dictInitError = "The dictionary can not be initialized!";
     } errorMessages;
 
 public:
@@ -53,7 +56,11 @@ public slots:
 
 signals:
     void translationIsReady(const QMap<QString, QString>&);
-    void wordIsNotFound(const QString& = errorMessages.wordIsNotFound);
+    void wordIsNotFound(const QString& = errorMessages.wordIsNotFound, const bool &blockInput = false);
+
+    void dictionaryHasBeenInitialized();
+    void dictionaryInitError(const QString& = errorMessages.dictInitError, const bool &blockInput = true);
+
 };
 
 

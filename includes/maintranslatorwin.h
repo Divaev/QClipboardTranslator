@@ -40,7 +40,7 @@ private:
 public slots:
 
     void printResultTranslation(const QMap<QString, QString>&);
-    void printError(const QString&);
+    void proceedError(const QString&, const bool&);
     void makeTranslateAvailable();
 
 signals:
