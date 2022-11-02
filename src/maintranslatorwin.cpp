@@ -81,6 +81,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     QObject::connect(ui->actionSetDictionary, &QAction::triggered,
                      this, [this]() {
                                 dictionaryDialog->show();
+                                dictionaryDialog->refreshDictListWidget();
                            });
 }
 
@@ -107,7 +108,6 @@ WordsFinderThread* MainTranslatorWin::getWordsFinderThread() {
 
 MainTranslatorWin::~MainTranslatorWin()
 {
-    //delete clipboardThread;
     delete ui;
 }
 
