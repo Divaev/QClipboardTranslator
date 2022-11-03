@@ -9,7 +9,9 @@ void WordsReceiver::setCurrentWord(const QString& word) {
     input_word = word;
 }
 
+
 void WordsFinder::findTheSingleWord(const QString& word) {
+
     QString lower_word = word.toLower();
     pugi::xml_node main_node = current_dictionary.child("xdxf");
     pugi::xml_node found_node = current_dictionary.find_node([lower_word](const pugi::xml_node& curr_node) {
@@ -46,12 +48,13 @@ QMap<QString, QString> WordsFinder::translateTheSingleWorld(const pugi::xml_node
     return translationResult;
 }
 
+
 void WordsFinder::initTheDict(const QString& dict_path) {
+
     bool res = current_dictionary.load_file(dict_path.toStdString().c_str());
     qDebug() << (res ? QString("Dict is loaded: ") + dict_path :
                        QString("Dict is not initialized"));
     if (res == true)
-        //emit dictionaryInitError();
         emit dictionaryHasBeenInitialized();
     else
         emit dictionaryInitError();
@@ -61,7 +64,11 @@ void WordsFinder::initTheDict(const QString& dict_path) {
 struct WordsFinder::ErrorMessages WordsFinder::errorMessages;
 
 WordsFinder::~WordsFinder() {
-    //current_dictionary.reset();
+    /*
+    if(current_dictionary.document_element()) {                         //if the dictionary already loaded
+        current_dictionary.reset();
+    }
+    */
 }
 
 WordsFinderThread::WordsFinderThread(WordsReceiver *receiver,
@@ -106,10 +113,12 @@ void WordsFinderThread::run() {
 }
 
 WordsFinder* WordsFinderThread::getWordsFinder() {
+
     return wordsFinder;
 }
 
 WordsFinderThread::~WordsFinderThread() {
+
     delete wordsFinder;
 }
 

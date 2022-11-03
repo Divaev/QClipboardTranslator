@@ -1,6 +1,7 @@
 #ifndef MAINTRANSLATORWIN_H
 #define MAINTRANSLATORWIN_H
 
+#include <QtCore>
 #include <QMainWindow>
 #include <QTextCursor>
 #include <QClipboard>

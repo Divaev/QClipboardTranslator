@@ -7,6 +7,7 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
     , ui(new Ui::SelectDictionaryDialog)
 {
     ui->setupUi(this);
+    this->setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     dictNames = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
     currentDict = settings_ptr->value("current_dict_path").toString();                  //from the settings
@@ -18,11 +19,9 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
     addDictDialog->resize(320,240);
     addDictDialog->setViewMode(QFileDialog::List);
 
-
     QObject::connect(ui->addDictButton, &QPushButton::clicked,
                      this, [this]() {
 
-                                //addDictDialog->setViewMode(QFileDialog::Detail);
                                 addDictDialog->setFileMode(QFileDialog::ExistingFiles);
                                 addDictDialog->setNameFilter("Dictionaries (*.xdxf)");
 
@@ -32,12 +31,18 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
                                     if (!addDictNames.empty()) {
                                         setOkButton(true);
                                         setDeleteButton(true);
-                                    }
+                                        //----------Temporary code--------------
+                                        if (addDictNames.count() == 1 &&
+                                                !dictNames.contains(addDictNames[0])) {
+                                            currentDict = addDictNames[0];
+                                        }
+                                        //---------------------------------------
 
-                                    dictNames.append(addDictNames);                       //add chosen dialogs to the existing pool
-                                    std::sort(dictNames.begin(), dictNames.end());
-                                    auto lastName = std::unique(dictNames.begin(), dictNames.end());
-                                    dictNames.erase(lastName, dictNames.end());
+                                        dictNames.append(addDictNames);                       //add chosen dialogs to the existing pool
+                                        std::sort(dictNames.begin(), dictNames.end());
+                                        auto lastName = std::unique(dictNames.begin(), dictNames.end());
+                                        dictNames.erase(lastName, dictNames.end());
+                                    }
                                 }
 
                                 refreshDictListWidget();                                //refresh dictListWidget after adding new dictionaries
@@ -63,6 +68,11 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
                                 emit this->dictHasBeenChosen();
 
                              });
+    QObject::connect(ui->dictOkCancelBox, &QDialogButtonBox::rejected,
+                     this, [this]() {
+                                dictNames = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
+                                currentDict = settings_ptr->value("current_dict_path").toString();                  //from the settings
+                            });
 
 }
 
@@ -82,16 +92,14 @@ void SelectDictionaryDialog::refreshDictListWidget() {
     };
     //-------------------------------------------------
 
-
     dictNames.sort();
     int currentRow = dictNames.indexOf(currentDict);
 
     QStringList shortDictNames = genShortNames(dictNames);
-    //shortDictNames.append("dict1");
+
     ui->dictListWidget->clear();
     ui->dictListWidget->addItems(shortDictNames);
 
-    //currentDict = "dict1";
     /*
     QList<QListWidgetItem*> selectedDicts = ui->dictListWidget->findItems(currentDict, Qt::MatchFixedString);
 
@@ -105,22 +113,6 @@ void SelectDictionaryDialog::refreshDictListWidget() {
         QListWidgetItem* item = ui->dictListWidget->item(currRow);
         item->setToolTip(dictNames[currRow]);
     }
-
-
-    /*
-    QString currDictTest = "dict";
-    QList<QListWidgetItem*> selectedDicts = ui->dictListWidget->findItems(currDictTest, Qt::MatchFixedString);
-    selectedDicts[0]->setToolTip("this is test tooltip");
-
-
-    currDictTest = "ru_en_short";
-    selectedDicts = ui->dictListWidget->findItems(currDictTest, Qt::MatchFixedString);
-    selectedDicts[0]->setToolTip("this is test tooltip2");
-    */
-
-
-
-
 
     if (currentRow > -1) {
         ui->dictListWidget->setCurrentRow(currentRow);
@@ -147,25 +139,9 @@ void SelectDictionaryDialog::setDeleteButton(const bool& state) {
     ui->delDictButton->setEnabled(state);
 }
 
-bool SelectDictionaryDialog::event(QEvent* event) {
-    if (event->type() == QEvent::ToolTip) {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-        /*
-        int index = itemAt(helpEvent->pos());
-        if (index != -1) {
-            QToolTip::showText(helpEvent->globalPos(), shapeItems[index].toolTip());
-        } else {
-            QToolTip::hideText();
-            event->ignore();
-        }
-        */
-
-        return true;
-    }
-    return QWidget::event(event);
+void SelectDictionaryDialog::closeEvent(QCloseEvent *event) {
+    emit  ui->dictOkCancelBox->rejected();
 }
-
-
 SelectDictionaryDialog::~SelectDictionaryDialog()
 {
     delete ui;

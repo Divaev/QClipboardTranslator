@@ -39,7 +39,7 @@ private:
     void setOkButton(const bool&);
     void setDeleteButton(const bool&);
 
-    bool event(QEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 signals:
     void dictHasBeenChosen();
