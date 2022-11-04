@@ -11,6 +11,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+#if(WIN32)
+  #set(GUI_TYPE WIN32)
+
+#add_definitions(-DWIN32 -D_WINDOWS -D_UNICODE -DUNICODE)
+
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check https://doc.qt.io/qt/deployment-android.html for more information.
 # They need to be set before the find_package( ...) calls below.
@@ -36,8 +42,9 @@ set(SOURCES
     src/pugixml.cpp
     src/words_finder.cpp
     src/selectdictionarydialog.cpp
-
+    src/qglobalshortcut.cc
 )
+
 
 set(HEADERS
     includes/maintranslatorwin.h
@@ -45,6 +52,7 @@ set(HEADERS
     includes/pugixml.hpp
     includes/words_finder.h
     includes/selectdictionarydialog.h
+    includes/qglobalshortcut.h
     )
 
 set(FORMS
@@ -70,20 +78,18 @@ add_executable(QClipboardTranslator
     ${FORMS}
 )
 
-#if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-#    qt_add_executable(QClipboardTranslator
-#        ${PROJECT_SOURCES}
-#    )
-#else()
-#    if(ANDROID)
-#        add_library(QClipboardTranslator SHARED
-#            ${PROJECT_SOURCES}
-#        )
-#    else()
-#        add_executable(QClipboardTranslator
-#            ${PROJECT_SOURCES}
-#        )
-#    endif()
-#endif()
+if (WIN32)
+    target_sources(QClipboardTranslator
+            PUBLIC src/qglobalshortcut_win.cc
+
+    )
+endif()
+
+if (UNIX)
+    target_sources(QClipboardTranslator
+            PUBLIC src/qglobalshortcut_x11.cc
+    )
+endif()
+
 
 target_link_libraries(QClipboardTranslator PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

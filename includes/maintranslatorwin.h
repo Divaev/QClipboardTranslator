@@ -8,6 +8,7 @@
 #include <QSettings>
 #include "words_finder.h"
 #include "selectdictionarydialog.h"
+#include "qglobalshortcut.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -37,6 +38,7 @@ public:
 private:
     Ui::MainTranslatorWin *ui;
     SelectDictionaryDialog *dictionaryDialog;
+    QGlobalShortcut *wakeUpGlobalShortcut;
 
 public slots:
 
@@ -45,7 +47,6 @@ public slots:
     void makeTranslateAvailable();
 
 signals:
-    //void setDictPath(const QString&);
     void stopWordsFinderThread();
 };
 #endif // MAINTRANSLATORWIN_H

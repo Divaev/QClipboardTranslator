@@ -6,7 +6,17 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTranslatorWin)
     , clipboard(QApplication::clipboard())
-    , settings("settings.ini", QSettings::IniFormat) {
+    , settings("settings.ini", QSettings::IniFormat)
+    , wakeUpGlobalShortcut(new QGlobalShortcut) {
+
+    SYSTEMTIME st, lt;
+
+    GetSystemTime(&st);
+    GetLocalTime(&lt);
+
+    printf("The system time is: %02d:%02d\n", st.wHour, st.wMinute);
+    printf(" The local time is: %02d:%02d\n", lt.wHour, lt.wMinute);
+    qDebug() << "The system time: " << QString::number(st.wHour);
 
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
@@ -15,6 +25,14 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     ui->setupUi(this);
 
     ui->translateButton->setEnabled(false);
+
+    wakeUpGlobalShortcut->setKey(QKeySequence("Alt+Ctrl+M"));              //set the global hot key
+
+    QObject::connect(wakeUpGlobalShortcut, &QGlobalShortcut::activated,
+                                            this, [this]() {
+                                                qDebug() << "Shortkey is detected!";
+                                                this->activateWindow();
+                                            });
 
 
 
@@ -96,6 +114,10 @@ bool MainTranslatorWin::eventFilter(QObject* watched, QEvent* event) {
             emit ui->translateButton->clicked();                        //emit the signale
             return true;                                                //and block this event
         }
+    }
+    else if (event->type() == QEvent::WindowActivate) {
+        ui->inputLineEdit->setFocus();
+        return  true;
     }
 
     return false;                                                       //in the other cases the event goes to textEditor
