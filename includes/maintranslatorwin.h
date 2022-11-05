@@ -15,7 +15,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainTranslatorWin; }
 QT_END_NAMESPACE
 
-
+enum class WordStatus {SENT, TRANSLATED, ERROR};
 
 class MainTranslatorWin : public QMainWindow
 {
@@ -33,12 +33,15 @@ class MainTranslatorWin : public QMainWindow
 public:
     MainTranslatorWin(QWidget *parent = nullptr);
     WordsFinderThread* getWordsFinderThread();
+
     ~MainTranslatorWin();
 
 private:
     Ui::MainTranslatorWin *ui;
     SelectDictionaryDialog *dictionaryDialog;
     QGlobalShortcut *wakeUpGlobalShortcut;
+
+    WordStatus currentWordStatus;
 
 public slots:
 

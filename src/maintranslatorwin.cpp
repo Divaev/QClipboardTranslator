@@ -7,7 +7,8 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     , ui(new Ui::MainTranslatorWin)
     , clipboard(QApplication::clipboard())
     , settings("settings.ini", QSettings::IniFormat)
-    , wakeUpGlobalShortcut(new QGlobalShortcut) {
+    , wakeUpGlobalShortcut(new QGlobalShortcut)
+    , currentWordStatus(WordStatus::TRANSLATED) {
 
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
@@ -44,13 +45,17 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     QObject::connect(clipboard, &QClipboard::dataChanged,                               //bind the clipboard with the words receiver
                      this, [&](){
-                                current_word = clipboard->text();                       //read the current word from the clipboard
-                                while (current_word == "") {
-                                     current_word = clipboard->text();
-                                }
+                                if (currentWordStatus == WordStatus::TRANSLATED ||
+                                        currentWordStatus == WordStatus::ERROR) {              //if the previous translation request is processed
+                                        current_word = clipboard->text();                       //read the current word from the clipboard
+                                        while (current_word == "") {
+                                             current_word = clipboard->text();
+                                        }
 
-                                ui->inputLineEdit->setText(current_word);          //set a word from the clipboard as an input word
-                                emit wordsReceiver->wordIsReceived(current_word);
+                                        ui->inputLineEdit->setText(current_word);          //set a word from the clipboard as an input word
+                                        emit wordsReceiver->wordIsReceived(current_word);
+                                        currentWordStatus = WordStatus::SENT;
+                                }
                             });
 
 
@@ -123,6 +128,7 @@ WordsFinderThread* MainTranslatorWin::getWordsFinderThread() {
     return wordsFinderThread;
 }
 
+
 MainTranslatorWin::~MainTranslatorWin()
 {
     delete ui;
@@ -146,6 +152,7 @@ void MainTranslatorWin::printResultTranslation(const QMap<QString, QString> &res
     QTextCursor textCursor = ui->outputTextEdit->textCursor();
     textCursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor,1);
     ui->outputTextEdit->setTextCursor(textCursor);
+    currentWordStatus = WordStatus::TRANSLATED;
 }
 
 void MainTranslatorWin::proceedError(const QString& err_message, const bool& block_input) {
@@ -162,6 +169,7 @@ void MainTranslatorWin::proceedError(const QString& err_message, const bool& blo
     QTextCursor textCursor = ui->outputTextEdit->textCursor();
     textCursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor,1);
     ui->outputTextEdit->setTextCursor(textCursor);
+    currentWordStatus = WordStatus::ERROR;
 }
 
 

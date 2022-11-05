@@ -12,7 +12,8 @@ void WordsReceiver::setCurrentWord(const QString& word) {
 
 void WordsFinder::findTheSingleWord(const QString& word) {
 
-    QString lower_word = word.toLower();
+    QString lower_word = word.trimmed().toLower();
+
     pugi::xml_node main_node = current_dictionary.child("xdxf");
     pugi::xml_node found_node = current_dictionary.find_node([lower_word](const pugi::xml_node& curr_node) {
                                                                             return strcmp(curr_node.value(), lower_word.toStdString().c_str()) ? false: true;
