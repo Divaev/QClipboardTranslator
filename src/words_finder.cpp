@@ -61,6 +61,11 @@ void WordsFinder::initTheDict(const QString& dict_path) {
         emit dictionaryInitError();
 }
 
+void WordsFinder::resetTheDict() {
+    current_dictionary.reset();
+    qDebug() << "current dict is reseted!";
+}
+
 
 struct WordsFinder::ErrorMessages WordsFinder::errorMessages;
 
@@ -70,7 +75,9 @@ WordsFinder::~WordsFinder() {
         current_dictionary.reset();
     }
     */
+
 }
+
 
 WordsFinderThread::WordsFinderThread(WordsReceiver *receiver,
                                      const QString& _dict_path,
@@ -82,7 +89,7 @@ WordsFinderThread::WordsFinderThread(WordsReceiver *receiver,
 void WordsFinderThread::run() {
 
     wordsFinder = new WordsFinder;
-    wordsFinder->initTheDict(dict_path);
+
 
     QObject::connect(wordsReceiver, &WordsReceiver::wordIsReceived,
                      wordsFinder, &WordsFinder::findTheSingleWord);
@@ -93,8 +100,16 @@ void WordsFinderThread::run() {
     QObject::connect(wordsFinder, &WordsFinder::wordIsNotFound,
                      wordsReceiver, &WordsReceiver::sendErrorNotification);
 
+    QObject::connect(wordsFinder, &WordsFinder::dictionaryInitError,
+                     wordsReceiver, &WordsReceiver::sendErrorNotification);
+
     QObject::connect(wordsReceiver, &WordsReceiver::setDictPath,
                      wordsFinder, &WordsFinder::initTheDict);
+
+    QObject::connect(wordsReceiver, &WordsReceiver::unsetDictPath,
+                     wordsFinder, &WordsFinder::resetTheDict);
+
+
 
     QObject::connect(wordsFinder, &WordsFinder::dictionaryHasBeenInitialized,
                      wordsReceiver, &WordsReceiver::dictionaryIsReady);
@@ -106,6 +121,8 @@ void WordsFinderThread::run() {
 
     QObject::connect(wordsReceiver, &WordsReceiver::stopWordsFinderThread,
                      this, &QThread::quit);
+
+    wordsFinder->initTheDict(dict_path);
 
 
 

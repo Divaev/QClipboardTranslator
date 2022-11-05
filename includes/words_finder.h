@@ -23,6 +23,7 @@ signals:
     void sendErrorNotification(const QString&, const bool&);
     void wordIsReceived(const QString&);
     void setDictPath(const QString&);
+    void unsetDictPath();
     void stopWordsFinderThread();
 
     void dictionaryIsReady();
@@ -40,17 +41,17 @@ class WordsFinder: public QObject {
 
     static struct ErrorMessages {
         QString wordIsNotFound = "The word is not found!";
-        QString dictInitError = "The dictionary can not be initialized!";
+        QString dictInitError = "Error during dictionary initialization!";
     } errorMessages;
 
 public:
 
     QMap<QString, QString> translateTheSingleWorld(const pugi::xml_node&) const;
-
     ~WordsFinder();
 
 public slots:
     void initTheDict(const QString& dict_path);
+    void resetTheDict();
     void findTheSingleWord(const QString&);
 
 

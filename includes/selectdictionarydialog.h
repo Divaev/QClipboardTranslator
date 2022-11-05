@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <QHelpEvent>
 #include <QToolTip>
+#include <QIcon>
+#include <QStyledItemDelegate>
 
 #include <thread>
 
@@ -18,6 +20,8 @@ namespace Ui {
     class SelectDictionaryDialog;
 }
 QT_END_NAMESPACE
+
+class CustomDelegate;
 
 class SelectDictionaryDialog : public QDialog
 {
@@ -33,8 +37,12 @@ public:
 private:
     QFileDialog* addDictDialog;
     QStringList dictNames;
-    QString currentDict;
+    QString loadedDictName;
+    QString selectedDictName;
     Ui::SelectDictionaryDialog *ui;
+
+    QIcon loadingErrorIcon;
+    CustomDelegate* customDelegate;
 
     void setOkButton(const bool&);
     void setDeleteButton(const bool&);
@@ -43,13 +51,20 @@ private:
 
 signals:
     void dictHasBeenChosen();
+    void dictHasBeenDeleted(const QString&, const bool& = true);
     void dictErrorThrow(const QString&, const bool& = true);
-
-
-
-
-
-
 };
+
+
+
+
+class CustomDelegate: public QStyledItemDelegate {
+    Q_OBJECT
+public:
+    CustomDelegate(QObject* parent);
+private:
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+};
+
 
 #endif // SELECTDICTIONARYDIALOG_H

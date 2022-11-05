@@ -62,6 +62,8 @@ set(FORMS
     #src/selectdictionarydialog.ui
     )
 
+qt5_add_resources(RESOURCES resources/resources.qrc)
+
 include_directories( ${CMAKE_SOURCE_DIR}/includes
                      ${CMAKE_SOURCE_DIR}/src
                      )
@@ -76,6 +78,7 @@ add_executable(QClipboardTranslator
     ${SOURCES}
     ${HEADERS}
     ${FORMS}
+    ${RESOURCES}
 )
 
 if (WIN32)
