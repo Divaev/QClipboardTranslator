@@ -9,15 +9,6 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     , settings("settings.ini", QSettings::IniFormat)
     , wakeUpGlobalShortcut(new QGlobalShortcut) {
 
-    SYSTEMTIME st, lt;
-
-    GetSystemTime(&st);
-    GetLocalTime(&lt);
-
-    printf("The system time is: %02d:%02d\n", st.wHour, st.wMinute);
-    printf(" The local time is: %02d:%02d\n", lt.wHour, lt.wMinute);
-    qDebug() << "The system time: " << QString::number(st.wHour);
-
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
     settings.setValue("current_dict_path", "dict.xdxf");
@@ -54,6 +45,10 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     QObject::connect(clipboard, &QClipboard::dataChanged,                               //bind the clipboard with the words receiver
                      this, [&](){
                                 current_word = clipboard->text();                       //read the current word from the clipboard
+                                while (current_word == "") {
+                                     current_word = clipboard->text();
+                                }
+
                                 ui->inputLineEdit->setText(current_word);          //set a word from the clipboard as an input word
                                 emit wordsReceiver->wordIsReceived(current_word);
                             });
