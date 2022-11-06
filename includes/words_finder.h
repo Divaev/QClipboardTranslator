@@ -27,6 +27,7 @@ signals:
     void stopWordsFinderThread();
 
     void dictionaryIsReady();
+    void dictErrorThrow(const QString&, const bool&);
 
 };
 

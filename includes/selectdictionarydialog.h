@@ -21,6 +21,8 @@ namespace Ui {
 }
 QT_END_NAMESPACE
 
+enum class ActualDictStatus {OK, ERROR, UNKNOWN};
+
 class CustomDelegate;
 
 class SelectDictionaryDialog : public QDialog
@@ -33,19 +35,34 @@ public:
     ~SelectDictionaryDialog();
 
     void refreshDictListWidget();
+    void initMainDictParameters();
 
 private:
     QFileDialog* addDictDialog;
+
     QStringList dictNames;
-    QString loadedDictName;
+    QString actualDictName;
     QString selectedDictName;
+
+    QStringList dictNamesInitial;
+    QString actualDictNameInitial;
+    //QString selectedDictNameInitial;
+
+
+    //ActualDictStatus actualDictStatus;
+
+    QPair<QString, ActualDictStatus> actualDictStatus;
+
+
+
     Ui::SelectDictionaryDialog *ui;
 
-    QIcon loadingErrorIcon;
+    QIcon loadingErrorIcon, loadingSuccessIcon, loadingUnknownIcon;
     CustomDelegate* customDelegate;
 
-    void setOkButton(const bool&);
+    //void setOkButton(const bool&);
     void setDeleteButton(const bool&);
+    void setSelectButton(const bool&);
 
     void closeEvent(QCloseEvent* event) override;
 
@@ -53,6 +70,13 @@ signals:
     void dictHasBeenChosen();
     void dictHasBeenDeleted(const QString&, const bool& = true);
     void dictErrorThrow(const QString&, const bool& = true);
+
+public slots:
+    //void markLoadedDictAsBroken();
+    void applyDictStatus(const ActualDictStatus& status);
+
+    void printDictStatusIcons();
+    void chooseSelectedDict();
 };
 
 

@@ -10,7 +10,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     , wakeUpGlobalShortcut(new QGlobalShortcut)
     , currentWordStatus(WordStatus::TRANSLATED) {
 
-    this->setWindowFlags(Qt::WindowStaysOnTopHint);
+    //this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
     ui->setupUi(this);
 
@@ -39,7 +39,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     wordsReceiver = new WordsReceiver(this);                                            //define the words receiver
                                                                                         //which stays in the main thread
-    wordsFinderThread = new WordsFinderThread(wordsReceiver, settings.value("loaded_dict_path").toString(), this);        //define the words finder thread
+    wordsFinderThread = new WordsFinderThread(wordsReceiver, settings.value("loading_dict_path").toString(), this);        //define the words finder thread
 
     QObject::connect(clipboard, &QClipboard::dataChanged,                               //bind the clipboard with the words receiver
                      this, [&](){
@@ -72,6 +72,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                                 ui->inputLineEdit->clear();
                                 ui->translateButton->setEnabled(false);
                                 ui->outputTextEdit->clear();
+                                emit sendDictStatus(ActualDictStatus::OK);
                            });
 
 
@@ -86,9 +87,16 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
 
     QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictHasBeenChosen,
                      this, [this]() {
-                                emit wordsReceiver->setDictPath(settings.value("loaded_dict_path").toString());
-                                qDebug() << "new dictionary has been chosen!";
-                                qDebug() << "The new dict is " << settings.value("loaded_dict_path").toString();
+                                emit sendDictStatus(ActualDictStatus::UNKNOWN);
+                                emit wordsReceiver->setDictPath(settings.value("loading_dict_path").toString());
+                                //qDebug() << "new dictionary has been chosen!";
+                                //qDebug() << "The new dict is " << settings.value("loading_dict_path").toString();
+                                ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: black;}");
+                                ui->outputTextEdit->setPlainText("Dictionary is loading..");
+                                ui->inputLineEdit->setStyleSheet("QPlainTextEdit {color: red;}");
+                                ui->inputLineEdit->setText("Dictionary is loading..");
+                                ui->inputLineEdit->setEnabled(false);
+                                ui->translateButton->setEnabled(false);
                             });
 
     QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictHasBeenDeleted,
@@ -101,9 +109,21 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     QObject::connect(dictionaryDialog, &SelectDictionaryDialog::dictErrorThrow,
                      this, &MainTranslatorWin::processError);
 
+    QObject::connect(wordsReceiver, &WordsReceiver::dictErrorThrow,
+                     this, [this](const QString& msg, const bool& block_flag) {
+                                processError(msg, block_flag);
+                                emit sendDictStatus(ActualDictStatus::ERROR);
+                            });
+
+    QObject::connect(this, &MainTranslatorWin::sendDictStatus,
+                     dictionaryDialog, &SelectDictionaryDialog::applyDictStatus);
+
+
+
     QObject::connect(ui->actionSetDictionary, &QAction::triggered,
                      this, [this]() {
                                 dictionaryDialog->show();
+                                dictionaryDialog->initMainDictParameters();
                                 dictionaryDialog->refreshDictListWidget();
                            });
 }

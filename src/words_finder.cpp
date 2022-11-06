@@ -101,7 +101,7 @@ void WordsFinderThread::run() {
                      wordsReceiver, &WordsReceiver::sendErrorNotification);
 
     QObject::connect(wordsFinder, &WordsFinder::dictionaryInitError,
-                     wordsReceiver, &WordsReceiver::sendErrorNotification);
+                     wordsReceiver, &WordsReceiver::dictErrorThrow);
 
     QObject::connect(wordsReceiver, &WordsReceiver::setDictPath,
                      wordsFinder, &WordsFinder::initTheDict);

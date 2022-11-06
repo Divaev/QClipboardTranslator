@@ -6,16 +6,24 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
     , QDialog(parent)
     , ui(new Ui::SelectDictionaryDialog)
     , loadingErrorIcon(QPixmap(":/icons/dict_load_error.png"))
+    , loadingSuccessIcon(":/icons/dict_load_ok.png")
+    , loadingUnknownIcon(":/icons/dict_load_unknown.png")
     , customDelegate(new CustomDelegate(this))
+    , actualDictStatus("", ActualDictStatus::UNKNOWN)
 {
     ui->setupUi(this);
 
-    this->setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    this->setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);             //delete question button on the top of the window
 
-    dictNames = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
-    loadedDictName = settings_ptr->value("loaded_dict_path").toString();                  //from the settings
+    dictNamesInitial = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
+    actualDictNameInitial = settings_ptr->value("loading_dict_path").toString();                  //from the settings
 
-    selectedDictName = "";
+    dictNames = dictNamesInitial;
+    actualDictName = actualDictNameInitial;
+
+    selectedDictName = actualDictName;
+
+    actualDictStatus = {actualDictName, ActualDictStatus::UNKNOWN};
 
     refreshDictListWidget();                                                            //refresh dictListWidget after loading from the settings
 
@@ -23,6 +31,10 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
     addDictDialog->setWindowModality(Qt::WindowModal);
     addDictDialog->resize(320,240);
     addDictDialog->setViewMode(QFileDialog::List);
+
+    ui->dictListWidget->setItemDelegate(customDelegate);
+
+
 
     QObject::connect(ui->addDictButton, &QPushButton::clicked,
                      this, [this]() {
@@ -34,8 +46,9 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
                                 if (addDictDialog->exec()) {                              //execution of the dict choosing dialog
                                     addDictNames = addDictDialog->selectedFiles();
                                     if (!addDictNames.empty()) {
-                                        setOkButton(true);
+                                        //setOkButton(true);
                                         setDeleteButton(true);
+                                        setSelectButton(true);
                                         //----------Temporary code--------------
                                         if (addDictNames.count() == 1 &&
                                                 !dictNames.contains(addDictNames[0])) {
@@ -57,53 +70,86 @@ SelectDictionaryDialog::SelectDictionaryDialog(QSettings *set_ptr, QWidget *pare
     QObject::connect(ui->delDictButton, &QPushButton::clicked,
                      this, [this]() {
                                 int currentRow = ui->dictListWidget->currentRow();              //receive the number of the selected row
-                                if (dictNames.at(currentRow) == loadedDictName)
-                                    loadedDictName = "";
+                                if (dictNames.at(currentRow) == actualDictName)
+                                    actualDictName = "";
                                 if (dictNames.at(currentRow) == selectedDictName)
                                     selectedDictName = "";
 
                                 dictNames.removeAt(currentRow);                                 //delete this row
 
                                 settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
-                                settings_ptr->setValue("loaded_dict_path", loadedDictName);
+                                settings_ptr->setValue("loading_dict_path", actualDictName);
 
                                 refreshDictListWidget();                                        //refresh dictListWidget after removing of a dictionary
 
                            });
 
+    QObject::connect(ui->selectDictButton, &QPushButton::clicked,
+                     this, [this]() {
+                                //int selectedRow = dictNames.indexOf(selectedDictName);
+                                int selectedRow = ui->dictListWidget->currentRow();
+                                selectedDictName = dictNames[selectedRow];
+                                chooseSelectedDict();
+                                refreshDictListWidget();
+
+                             });
+
 
     QObject::connect(ui->dictOkCancelBox, &QDialogButtonBox::accepted,
                      this, [this]() {
-
-
-                                //int loadedRow = ui->dictListWidget->currentRow();              //selected row in the widget is the current logic row
-                                //loadedDictName = dictNames[loadedRow];                           //assing currentDict as the dict that has currentRow index in the
-                                                                                            //dictNames QStringList
                                 if (!dictNames.empty()) {
                                     int selectedRow = ui->dictListWidget->currentRow();
-                                    loadedDictName = dictNames[selectedRow];
-                                }
-                                settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
-                                settings_ptr->setValue("loaded_dict_path", loadedDictName);
-
-                                if (!dictNames.empty()) {
-                                    emit this->dictHasBeenChosen();
+                                    selectedDictName = dictNames[selectedRow];
+                                    if (actualDictStatus.first != selectedDictName)
+                                        chooseSelectedDict();                                     //dictNames QStringList
                                 }
 
-                             });
+
+                            });
     QObject::connect(ui->dictOkCancelBox, &QDialogButtonBox::rejected,
                      this, [this]() {
+
+                                /*
                                 dictNames = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
-                                loadedDictName = settings_ptr->value("loaded_dict_path").toString();                //from the settings
-                                if (loadedDictName == "") {
-                                    loadedDictName = settings_ptr->value("loaded_dict_path").toString();                //from the settings
+                                actualDictName = settings_ptr->value("loading_dict_path").toString();                //from the settings
+                                if (actualDictName == "") {
+                                    actualDictName = settings_ptr->value("loading_dict_path").toString();                //from the settings
                                     if (!dictNames.empty())
                                         emit dictHasBeenDeleted(QString("No dictionary is selected"));
                                     else
                                         emit dictHasBeenDeleted(QString("There is no added dictionaries!"));
                                 }
+                                */
+                                QString previousDictName = settings_ptr->value("loading_dict_path").toString();
+
+                                dictNames = dictNamesInitial;
+                                actualDictName = actualDictNameInitial;
+                                selectedDictName = actualDictName;
+                                settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
+                                settings_ptr->setValue("loading_dict_path", actualDictName);
+
+                                refreshDictListWidget();
+
+                                if (!dictNames.empty() && previousDictName != actualDictName) {
+                                    emit this->dictHasBeenChosen();
+                                }
+                                else if(dictNames.empty()) {
+                                    emit dictHasBeenDeleted(QString("There is no added dictionaries!"));
+                                }
+
                             });
 
+}
+
+void SelectDictionaryDialog::initMainDictParameters() {
+    dictNamesInitial = settings_ptr->value("list_of_dictionaries").value<QStringList>();       //load the dict names and the current dict
+    actualDictNameInitial = settings_ptr->value("loading_dict_path").toString();                  //from the settings
+
+    dictNames = dictNamesInitial;
+    actualDictName = actualDictNameInitial;
+    selectedDictName = actualDictName;
+
+    //selectedDictName = "";
 }
 
 void SelectDictionaryDialog::refreshDictListWidget() {
@@ -124,7 +170,7 @@ void SelectDictionaryDialog::refreshDictListWidget() {
 
     dictNames.sort();
 
-    int loadedRow = dictNames.indexOf(loadedDictName);
+    int actualRow = dictNames.indexOf(actualDictName);
     int selectedRow = dictNames.indexOf(selectedDictName);
 
     QStringList shortDictNames = genShortNames(dictNames);
@@ -137,7 +183,7 @@ void SelectDictionaryDialog::refreshDictListWidget() {
 
     if(!selectedDicts.empty()) {
         ui->dictListWidget->setCurrentItem(*(selectedDicts.begin()));
-        settings_ptr->setValue("loaded_dict_path", currentDict);
+        settings_ptr->setValue("loading_dict_path", currentDict);
     }
     */
 
@@ -146,16 +192,19 @@ void SelectDictionaryDialog::refreshDictListWidget() {
         item->setToolTip(dictNames[row]);
     }
 
-    if (loadedRow > -1) {
-        ui->dictListWidget->item(loadedRow)->setBackgroundColor(Qt::green);
+    if (actualRow > -1) {
+        //ui->dictListWidget->item(actualRow)->setBackgroundColor(Qt::green);
+        //ui->dictListWidget->item(actualRow)->setIcon(loadingSuccessIcon);
+        printDictStatusIcons();
+        setDeleteButton(true);
+        setSelectButton(true);
+
     }
-    else if (!dictNames.empty()) {
-        //ui->dictListWidget->setCurrentRow(0);
-    }
-    else {
-        loadedDictName = "";
-        setOkButton(false);
+    else if (dictNames.empty()) {
+        actualDictName = "";
+        //setOkButton(false);
         setDeleteButton(false);
+        setSelectButton(false);
         emit dictErrorThrow(QString("There is no added dictionaries!"));
     }
 
@@ -163,26 +212,27 @@ void SelectDictionaryDialog::refreshDictListWidget() {
         ui->dictListWidget->setCurrentRow(selectedRow);
     else if (!dictNames.empty()) {
         ui->dictListWidget->setCurrentRow(0);
-        ui->dictListWidget->item(0)->setIcon(loadingErrorIcon);
-
-        ui->dictListWidget->setItemDelegate(customDelegate);
-
+        //ui->dictListWidget->item(0)->setIcon(loadingErrorIcon);
     }
-
-
 
     if (!dictNames.empty())
         settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
 }
 
 
+/*
 void SelectDictionaryDialog::setOkButton(const bool& state) {
     ui->dictOkCancelBox->button(QDialogButtonBox::Ok)->setEnabled(state);
 }
+*/
 
 
 void SelectDictionaryDialog::setDeleteButton(const bool& state) {
     ui->delDictButton->setEnabled(state);
+}
+
+void SelectDictionaryDialog::setSelectButton(const bool &state) {
+    ui->selectDictButton->setEnabled(state);
 }
 
 void SelectDictionaryDialog::closeEvent(QCloseEvent *event) {
@@ -191,6 +241,50 @@ void SelectDictionaryDialog::closeEvent(QCloseEvent *event) {
 SelectDictionaryDialog::~SelectDictionaryDialog()
 {
     delete ui;
+}
+
+void SelectDictionaryDialog::applyDictStatus(const ActualDictStatus& status) {
+    //int actualRow = dictNames.indexOf(actualDictName);
+    //ui->dictListWidget->item(actualRow)->setIcon(loadingErrorIcon);
+    //ui->dictListWidget->item(actualRow)->setBackgroundColor(Qt::red);
+    if (status == ActualDictStatus::UNKNOWN)
+        qWarning() << "UNKNOWN dict status!";
+    actualDictStatus = {actualDictName, status};
+    printDictStatusIcons();
+
+}
+
+void SelectDictionaryDialog::chooseSelectedDict() {
+    if (!dictNames.empty()) {
+        int selectedRow = ui->dictListWidget->currentRow();
+        actualDictName = dictNames[selectedRow];
+    }
+    settings_ptr->setValue("list_of_dictionaries", QVariant::fromValue(dictNames));
+    settings_ptr->setValue("loading_dict_path", actualDictName);
+
+    if (!dictNames.empty()) {
+        emit this->dictHasBeenChosen();
+    }
+}
+
+void SelectDictionaryDialog::printDictStatusIcons() {
+
+    int actualRow = dictNames.indexOf(actualDictName);
+    if (actualRow > -1) {
+        switch (actualDictStatus.second) {
+        case ActualDictStatus::ERROR:
+            ui->dictListWidget->item(actualRow)->setIcon(loadingErrorIcon);
+            break;
+        case ActualDictStatus::OK:
+            ui->dictListWidget->item(actualRow)->setIcon(loadingSuccessIcon);
+            break;
+        case ActualDictStatus::UNKNOWN:
+            ui->dictListWidget->item(actualRow)->setIcon(loadingUnknownIcon);
+            break;
+        default:
+            qDebug() << "Incorrect dictionary state";
+        }
+    }
 }
 
 

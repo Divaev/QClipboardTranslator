@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/icons">
         <file>dict_load_error.png</file>
+        <file>dict_load_ok.png</file>
+        <file>dict_load_unknown.png</file>
     </qresource>
 </RCC>

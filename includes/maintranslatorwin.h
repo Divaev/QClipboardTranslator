@@ -51,5 +51,7 @@ public slots:
 
 signals:
     void stopWordsFinderThread();
+    //void loadingDictError();
+    void sendDictStatus(const ActualDictStatus&);
 };
 #endif // MAINTRANSLATORWIN_H
