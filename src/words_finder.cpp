@@ -75,7 +75,6 @@ WordsFinder::~WordsFinder() {
         current_dictionary.reset();
     }
     */
-
 }
 
 

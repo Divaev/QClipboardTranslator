@@ -10,7 +10,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
     , wakeUpGlobalShortcut(new QGlobalShortcut)
     , currentWordStatus(WordStatus::TRANSLATED) {
 
-    //this->setWindowFlags(Qt::WindowStaysOnTopHint);
+    this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
     ui->setupUi(this);
 
@@ -89,8 +89,6 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                      this, [this]() {
                                 emit sendDictStatus(ActualDictStatus::UNKNOWN);
                                 emit wordsReceiver->setDictPath(settings.value("loading_dict_path").toString());
-                                //qDebug() << "new dictionary has been chosen!";
-                                //qDebug() << "The new dict is " << settings.value("loading_dict_path").toString();
                                 ui->outputTextEdit->setStyleSheet("QPlainTextEdit {color: black;}");
                                 ui->outputTextEdit->setPlainText("Dictionary is loading..");
                                 ui->inputLineEdit->setStyleSheet("QPlainTextEdit {color: red;}");

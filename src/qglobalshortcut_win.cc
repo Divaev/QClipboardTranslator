@@ -109,8 +109,6 @@ quint32 QGlobalShortcut::toNativeModifiers(Qt::KeyboardModifiers m) {
 
 void QGlobalShortcut::registerKey(quint32 k, quint32 m, quint32 id) {
     bool res = RegisterHotKey(NULL, id, m, k);
-    //bool res = RegisterHotKey(NULL, 0, MOD_ALT | MOD_CONTROL, 0x4D);
-    //bool res = RegisterHotKey(0, 80, MOD_ALT | MOD_CONTROL, 0x4E);
     qDebug() << QString("RegisterHotkeryRes: ") << QString(res);
 }
 
