@@ -3,5 +3,6 @@
         <file>dict_load_error.png</file>
         <file>dict_load_ok.png</file>
         <file>dict_load_unknown.png</file>
+        <file>app_logo.png</file>
     </qresource>
 </RCC>

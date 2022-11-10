@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>qXdxf</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../../resources/resources.qrc">
+    <normaloff>:/icons/app_logo.png</normaloff>:/icons/app_logo.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -70,6 +74,8 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../resources/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

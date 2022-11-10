@@ -72,6 +72,7 @@ MainTranslatorWin::MainTranslatorWin(QWidget *parent)
                                 ui->inputLineEdit->clear();
                                 ui->translateButton->setEnabled(false);
                                 ui->outputTextEdit->clear();
+                                ui->inputLineEdit->setFocus();
                                 emit sendDictStatus(ActualDictStatus::OK);
                            });
 
@@ -176,6 +177,7 @@ void MainTranslatorWin::printResultTranslation(const QMap<QString, QString> &res
     textCursor.movePosition(QTextCursor::Start, QTextCursor::MoveAnchor,1);
     ui->outputTextEdit->setTextCursor(textCursor);
     currentWordStatus = WordStatus::TRANSLATED;
+    ui->inputLineEdit->setFocus();
 }
 
 void MainTranslatorWin::processError(const QString& err_message, const bool& block_input) {
