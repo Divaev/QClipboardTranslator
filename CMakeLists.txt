@@ -54,6 +54,12 @@ set(HEADERS
     includes/selectdictionarydialog.h
     includes/qglobalshortcut.h
     )
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    enable_language("RC")
+    #set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/win_res.rc")
+    set(WIN32_RESOURCES "${CMAKE_CURRENT_SOURCE_DIR}/resources/win_res.rc")
+endif()
+
 
 set(FORMS
     src/forms/maintranslatorwin.ui
@@ -79,6 +85,7 @@ add_executable(QClipboardTranslator WIN32
     ${HEADERS}
     ${FORMS}
     ${RESOURCES}
+    ${WIN32_RESOURCES}
 )
 
 if (WIN32)
