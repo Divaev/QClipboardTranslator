@@ -74,7 +74,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/includes
 #    ${FORMS}
 #)
 
-add_executable(QClipboardTranslator
+add_executable(QClipboardTranslator WIN32
     ${SOURCES}
     ${HEADERS}
     ${FORMS}
